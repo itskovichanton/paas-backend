@@ -1,8 +1,13 @@
+import inspect
+from dataclasses import dataclass
+
 from peewee import *
+from src.mbulak_tools.entities import Account
 from src.mybootstrap_core_itskovichanton.orm import entity
+from src.mybootstrap_core_itskovichanton.utils import hashed
 from src.mybootstrap_pyauth_itskovichanton.entities import User
 
-from src.unikron.backend.entity.common import UserStatus, UserPermission
+from src.unikron.backend.entity.common import UserStatus, UserPermission, Country, Service, ServiceCategory
 
 database = PostgresqlDatabase('unikron', **{'host': 'localhost', 'port': 3, 'user': 'postgres', 'password': '92559255'})
 
@@ -12,13 +17,12 @@ class UnknownField(object):
 
 
 class BaseModel(Model):
-    id = BigAutoField()
-
     class Meta:
         database = database
 
 
-class CategoryM(BaseModel):
+@entity(ServiceCategory)
+class ServiceCategoryM(BaseModel):
     id = BigAutoField()
     name = CharField(unique=True)
 
@@ -26,6 +30,7 @@ class CategoryM(BaseModel):
         table_name = 'category'
 
 
+@entity(Country)
 class CountryM(BaseModel):
     id = BigAutoField()
     name = CharField(unique=True)
@@ -53,19 +58,26 @@ class DictUserStatusM(BaseModel):
         table_name = 'dict_user_status'
 
 
+@entity(Service)
 class ServiceM(BaseModel):
     id = BigAutoField()
-    category_id = IntegerField()
+    category = ForeignKeyField(column_name='category_id', field='id', model=ServiceCategoryM)
     cherkizon_service = CharField(null=True)
-    country_id = IntegerField(null=True)
+    country = ForeignKeyField(column_name='country_id', field='id', model=CountryM)
     created_at = DateField()
     description = CharField(null=True)
-    gitlab_id = IntegerField(unique=True)
+    gitlab_project_id = IntegerField(unique=True)
     gitlab_url = CharField(unique=True)
     longread = TextField(null=True)
     name = CharField(unique=True)
     tags = CharField(null=True)
     title = CharField(unique=True)
+
+    @staticmethod
+    def get_short_fields():
+        return [ServiceM.id, ServiceM.category, ServiceM.cherkizon_service, ServiceM.country, ServiceM.created_at,
+                ServiceM.description,
+                ServiceM.gitlab_url, ServiceM.gitlab_project_id, ServiceM.name, ServiceM.tags, ServiceM.tags]
 
     class Meta:
         table_name = 'service'
@@ -84,6 +96,11 @@ class UserM(BaseModel):
     status = ForeignKeyField(column_name='status_id', constraints=[SQL("DEFAULT 1")], field='id', model=DictUserStatusM)
     username = CharField(unique=True)
 
+    @staticmethod
+    def get_public_fields():
+        return [UserM.id, UserM.additional_contact, UserM.created_at, UserM.deleted_at, UserM.email, UserM.name,
+                UserM.role, UserM.status, UserM.username]
+
     class Meta:
         table_name = 'user'
 
@@ -97,6 +114,14 @@ class UserPermissionM(BaseModel):
         primary_key = False
 
 
+@hashed
+@dataclass
+class _UserServiceRole:
+    user: User = None
+    role: str = None
+
+
+@entity(_UserServiceRole)
 class UserServiceRolesM(BaseModel):
     service_id = IntegerField(null=True)
     user_id = IntegerField(null=True)

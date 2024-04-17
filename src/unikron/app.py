@@ -1,10 +1,15 @@
+from src.mbulak_tools.entities import Account
 from src.mybootstrap_core_itskovichanton.app import Application
 from src.mybootstrap_core_itskovichanton.logger import LoggerService
 from src.mybootstrap_ioc_itskovichanton.ioc import bean
 from src.mybootstrap_pyauth_itskovichanton.backend.auth import Authentificator
+from src.mybootstrap_pyauth_itskovichanton.entities import Session
 
+from src.unikron.backend.entity.common import SearchServiceQuery
 from src.unikron.backend.repo.db import DB
 from src.unikron.backend.repo.user import DBUserRepoImpl
+from src.unikron.backend.repo.user_permission import UserPermissionRepo
+from src.unikron.backend.usecase.search_services import SearchServicesUseCase
 
 from src.unikron.frontend.server import Server
 
@@ -15,6 +20,8 @@ class UnikronApp(Application):
     db: DB
     user_repo: DBUserRepoImpl
     auther: Authentificator
+    db_user_permission_repo: UserPermissionRepo
+    find_services_uc: SearchServicesUseCase
     # uc1: GetDeployUrlUseCase
     # file_content_provider: BatchFileWriter
     # batch_file_validator: BatchFileValidator
@@ -27,6 +34,8 @@ class UnikronApp(Application):
 
     def run(self):
         self.auther.user_repo = self.user_repo
+        # self.find_services_uc.search(session=Session(account=Account(id=1)), q=SearchServiceQuery(query=""))
+        # self.db_user_permission_repo.has_permission(1, "control_service", "wri444te_etcd")
         # self.events.subscribe_on_events()
         # self.sync_services_usecase.sync()
         # self.db.get()

@@ -9,9 +9,11 @@ from src.mybootstrap_mvc_fastapi_itskovichanton.middleware_logging import HTTPLo
 from src.mybootstrap_mvc_fastapi_itskovichanton.presenters import JSONResultPresenterImpl
 from src.mybootstrap_mvc_itskovichanton.result_presenter import ResultPresenter
 from src.mybootstrap_pyauth_itskovichanton.frontend.support import AuthFastAPISupport
+from src.mybootstrap_pyauth_itskovichanton.frontend.utils import get_caller_from_request
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 
+from src.unikron.backend.entity.common import SearchServiceQuery
 from src.unikron.frontend.controller import Controller
 
 
@@ -47,8 +49,14 @@ class Server:
         return r
 
     def add_routes(self):
-        ...
+        @self.fast_api.post("/service/search")
+        async def service_search(request: Request, q: SearchServiceQuery):
+            return self.presenter.present(
+                await self.controller.search_services(caller=get_caller_from_request(request), query=q),
+            )
 
-        # @self.fast_api.post("/service/find")
-        # async def service_find(request: Request, q: SearchServiceQuery):
-        #     return self.presenter.present(await self.controller.find_services(q))
+        @self.fast_api.get("/commons")
+        async def service_search(request: Request):
+            return self.presenter.present(
+                await self.controller.get_commons(caller=get_caller_from_request(request)),
+            )

@@ -1,15 +1,21 @@
+from typing import Protocol
+
 from src.mybootstrap_core_itskovichanton.orm import infer_where, to_real_entity
 from src.mybootstrap_ioc_itskovichanton.ioc import bean
 from src.mybootstrap_pyauth_itskovichanton.backend.user_repo import UserRepo
 from src.mybootstrap_pyauth_itskovichanton.entities import User
 
 from src.unikron.backend.repo.db import DB
-from src.unikron.backend.repo.schema import UserM, DictUserStatusM, ServiceM, CountryM, CategoryM, DictUserPermissionM, \
+from src.unikron.backend.repo.schema import UserM, DictUserStatusM, ServiceM, CountryM, ServiceCategoryM, DictUserPermissionM, \
     UserPermissionM
 
 
+class DBUserRepo(UserRepo):
+    ...
+
+
 @bean
-class DBUserRepoImpl(UserRepo):
+class DBUserRepoImpl(DBUserRepo):
 
     def init(self, **kwargs):
         self._service_users: dict[id, User] = {}
@@ -29,8 +35,7 @@ class DBUserRepoImpl(UserRepo):
              .where(UserM.username == criteria.username))
         if r:
             r = r[0]
-            r.permissions = [x.name for x in self._get_user_permissions(r.id)]
-            r.status = r.status.name
+            r.permissions = self._get_user_permissions(r.id)
 
         return r
 
