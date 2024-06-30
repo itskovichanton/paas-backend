@@ -1,5 +1,6 @@
 import datetime
 from dataclasses import dataclass
+from typing import Any
 
 from src.mybootstrap_core_itskovichanton.utils import hashed
 from src.mybootstrap_pyauth_itskovichanton.entities import User
@@ -10,6 +11,13 @@ USER_PERMISSION_READ_SERVICE = "read_service"
 USER_PERMISSION_READ_DEPLOYS = "read_deploys"
 USER_PERMISSION_READ_ETCDS = "read_etcds"
 USER_PERMISSION_WRITE_ETCDS = "write_etcds"
+
+
+@dataclass
+class AuditMsg:
+    message: str = None
+    hook: dict = None
+    time: datetime = None
 
 
 @dataclass

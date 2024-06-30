@@ -4,6 +4,7 @@ from src.mybootstrap_pyauth_itskovichanton.entities import Caller
 
 from src.unikron.backend.entity.common import SearchServiceQuery, Deploy, DeployQuery
 from src.unikron.backend.usecase.get_commons import GetCommonsUseCase
+from src.unikron.backend.usecase.get_machine_team import GetMachineTeamUseCase
 
 from src.unikron.backend.usecase.get_service_team import GetServiceTeamUseCase
 from src.unikron.backend.usecase.list_deploy_etcds import ListDeploysETCDsUseCase
@@ -18,6 +19,7 @@ class Controller:
     search_services_uc: SearchServicesUseCase
     get_commons_uc: GetCommonsUseCase
     get_service_team_uc: GetServiceTeamUseCase
+    get_machine_team_uc: GetMachineTeamUseCase
     search_deploys_uc: SearchDeploysUseCase
     list_deploys_ETCDs_uc: ListDeploysETCDsUseCase
     submit_deploy_ETCDs_uc: SubmitETCDChangesUseCase
@@ -33,6 +35,10 @@ class Controller:
     async def get_service_team(self, caller: Caller, service):
         return await self.action_runner.run(self.get_service_team_uc.get,
                                             call={"session": caller.session, "service": service}, unbox_call=True)
+
+    async def get_machine_team(self, caller: Caller, ip):
+        return await self.action_runner.run(self.get_machine_team_uc.get,
+                                            call={"session": caller.session, "ip": ip}, unbox_call=True)
 
     async def search_deploys(self, caller: Caller, filter: Deploy):
         return await self.action_runner.run(self.search_deploys_uc.search,

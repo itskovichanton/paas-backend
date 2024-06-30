@@ -11,7 +11,8 @@ from src.unikron.backend.apis.cherkizon import Cherkizon
 from src.unikron.backend.apis.replicas import Replicas
 from src.unikron.backend.entity.common import SearchServiceQuery, Service, USER_PERMISSION_CONTROL_SERVICE, \
     USER_PERMISSION_READ_SERVICE, USER_PERMISSION_READ_DEPLOYS, Deploy, USER_PERMISSION_READ_ETCDS, DeployQuery, \
-    USER_PERMISSION_WRITE_ETCDS
+    USER_PERMISSION_WRITE_ETCDS, AuditMsg
+from src.unikron.backend.repo.audit import AuditRepo
 from src.unikron.backend.repo.service import ServiceRepo
 from src.unikron.backend.usecase.check_account_permission import CheckAccountPermissionUseCase
 from src.unikron.backend.usecase.search_deploys import SearchDeploysUseCase
@@ -30,6 +31,7 @@ class SubmitETCDChangesUseCaseImpl(SubmitETCDChangesUseCase):
     get_user_action: GetUserAction
     real_time_cfg_mgr: RealTimeConfigManager
     replicas: Replicas
+    audit_repo: AuditRepo
 
     def submit(self, session: Session, filter: Deploy, data: dict):
         session = self.get_user_action.run(session)
@@ -38,5 +40,20 @@ class SubmitETCDChangesUseCaseImpl(SubmitETCDChangesUseCase):
         deploy = listing.deploys[0]
         machine = listing.machines[deploy.machine]
         replica_etcds = self.replicas.list_etcds(deploy.internal_url)
+        changed = {}
         for key, value in data.items():
+            old_value = replica_etcds.data[key]["value"]
+            try:
+                if old_value == value:
+                    continue
+            except:
+                ...
             self.real_time_cfg_mgr.put(key, value, machine.ip, machine.etcd_port, key_prefix=replica_etcds.key_prefix)
+            self.audit_repo.save(
+                AuditMsg(
+                    hook={"author": session, "key": key, "value": value, "deploy": deploy},
+                    message=f"etcd-настройка {key} изменена для деплоя {deploy.systemd_name}. Изменения: '{old_value}' -->'{value}'"),
+            )
+            changed[key] = {"old": old_value, "new": value}
+
+        return changed

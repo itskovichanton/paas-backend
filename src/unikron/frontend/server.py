@@ -52,6 +52,12 @@ class Server:
         return r
 
     def add_routes(self):
+        @self.fast_api.get("/machine/team")
+        async def get_machine_team(request: Request, ip):
+            return self.presenter.present(
+                await self.controller.get_machine_team(caller=get_caller_from_request(request), ip=ip),
+            )
+
         @self.fast_api.get("/service/team")
         async def get_service_team(request: Request, service):
             return self.presenter.present(
@@ -92,5 +98,6 @@ class Server:
         @self.fast_api.post("/deploy/etcd/submit")
         async def submit_deploy_etcd(request: Request, data: _SubmitDeployEtcd):
             return self.presenter.present(
-                await self.controller.submit_deploy_etcd(caller=get_caller_from_request(request), data=data.data,
+                await self.controller.submit_deploy_etcd(caller=get_caller_from_request(request),
+                                                         data=data.data,
                                                          filter=data.deploy))

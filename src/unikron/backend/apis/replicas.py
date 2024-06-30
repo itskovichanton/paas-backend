@@ -20,7 +20,7 @@ class _Config:
 @dataclass
 class ETCDListing:
     key_prefix: str = None
-    data: list[RealTimeConfigEntry] = None
+    data: dict[str, RealTimeConfigEntry] = None
 
 
 class Replicas(Protocol):
@@ -39,4 +39,6 @@ class ReplicasImpl(Replicas):
         self._session.timeout = 5
 
     def list_etcds(self, replica_url) -> ETCDListing:
-        return parse_response(self._session.get(url=f"{replica_url}/etcd/list"), cl=ETCDListing)
+        r = parse_response(self._session.get(url=f"{replica_url}/etcd/list"), cl=ETCDListing)
+        r.data = {p.get("key"): p for p in r.data}
+        return r

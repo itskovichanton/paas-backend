@@ -7,7 +7,7 @@ from src.mybootstrap_core_itskovichanton.orm import entity
 from src.mybootstrap_core_itskovichanton.utils import hashed
 from src.mybootstrap_pyauth_itskovichanton.entities import User
 
-from src.unikron.backend.entity.common import UserStatus, UserPermission, Country, Service, ServiceCategory
+from src.unikron.backend.entity.common import UserStatus, UserPermission, Country, Service, ServiceCategory, AuditMsg
 
 database = PostgresqlDatabase('unikron', **{'host': 'localhost', 'port': 3, 'user': 'postgres', 'password': '92559255'})
 
@@ -131,3 +131,14 @@ class UserServiceRolesM(BaseModel):
     class Meta:
         table_name = 'user_service_roles'
         primary_key = False
+
+
+@entity(AuditMsg)
+class AuditMsgM(BaseModel):
+    id = BigAutoField()
+    message = CharField(null=True)
+    hook = CharField(null=True)
+    time = DateTimeField(constraints=[SQL("DEFAULT now()")], null=True)
+
+    class Meta:
+        table_name = 'audit'
