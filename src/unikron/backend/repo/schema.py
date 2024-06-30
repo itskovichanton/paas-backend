@@ -2,7 +2,7 @@ import inspect
 from dataclasses import dataclass
 
 from peewee import *
-from src.mbulak_tools.entities import Account
+
 from src.mybootstrap_core_itskovichanton.orm import entity
 from src.mybootstrap_core_itskovichanton.utils import hashed
 from src.mybootstrap_pyauth_itskovichanton.entities import User
@@ -76,7 +76,7 @@ class ServiceM(BaseModel):
     @staticmethod
     def get_short_fields():
         return [ServiceM.id, ServiceM.category, ServiceM.cherkizon_service, ServiceM.country, ServiceM.created_at,
-                ServiceM.description,
+                ServiceM.description, ServiceM.title,
                 ServiceM.gitlab_url, ServiceM.gitlab_project_id, ServiceM.name, ServiceM.tags, ServiceM.tags]
 
     class Meta:
@@ -95,11 +95,12 @@ class UserM(BaseModel):
     role = CharField(null=True)
     status = ForeignKeyField(column_name='status_id', constraints=[SQL("DEFAULT 1")], field='id', model=DictUserStatusM)
     username = CharField(unique=True)
+    telegram_username = CharField()
 
     @staticmethod
     def get_public_fields():
         return [UserM.id, UserM.additional_contact, UserM.created_at, UserM.deleted_at, UserM.email, UserM.name,
-                UserM.role, UserM.status, UserM.username]
+                UserM.role, UserM.status, UserM.username, UserM.telegram_username]
 
     class Meta:
         table_name = 'user'

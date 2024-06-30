@@ -1,7 +1,5 @@
-GET http://192.168.200.156:8081/send-kh?send=False
-Accept: application/json
-
-<> 2024-02-07T125827.500.json
+curl --location 'http://localhost:8082/commons' \
+--header 'Authorization: Basic YWl0c2tvdmljaDpjZWI5ZTBkZWZhYzY1MGMyZDJmYjQxY2Y3ZGNkODg4NA=='
 
 ###
 

@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from src.mbulak_tools.entities import Account
+
 from src.mybootstrap_ioc_itskovichanton.ioc import bean
 from src.mybootstrap_mvc_itskovichanton.exceptions import CoreException, ERR_REASON_ACCESS_DENIED
 from src.mybootstrap_pyauth_itskovichanton.entities import Session, User
@@ -11,7 +11,7 @@ from src.unikron.backend.repo.user_permission import UserPermissionRepo
 
 class CheckAccountPermissionUseCase(Protocol):
 
-    def check_permission(self, account: int | Session | Account, action, *arg):
+    def check_permission(self, account: int | Session | User, action, *arg):
         ...
 
 
@@ -23,7 +23,7 @@ class CheckAccountPermissionUseCaseImpl(CheckAccountPermissionUseCase):
         raise CoreException(message=f"У пользователя нет прав на выполнение действия {action}",
                             reason=ERR_REASON_ACCESS_DENIED)
 
-    def check_permission(self, auth_arg: int | Session | Account, action, *arg):
+    def check_permission(self, auth_arg: int | Session | User, action, *arg):
         if not self.user_permission_repo.has_permission(self.get_account_id(auth_arg, action), *arg):
             self._fail(action)
 
@@ -34,7 +34,7 @@ class CheckAccountPermissionUseCaseImpl(CheckAccountPermissionUseCase):
             auth_arg = auth_arg.account
         if not auth_arg:
             self._fail(action)
-        if isinstance(auth_arg, (Account, User)):
+        if isinstance(auth_arg, (User,)):
             auth_arg = auth_arg.id
         if not isinstance(auth_arg, int):
             self._fail(action)

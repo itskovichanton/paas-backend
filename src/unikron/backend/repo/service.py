@@ -15,15 +15,24 @@ from src.unikron.backend.repo.schema import UserM, DictUserStatusM, ServiceM, Co
 
 class ServiceRepo(Protocol):
 
-    def find_services(self, q: SearchServiceQuery = None) -> list[Service]:
+    def get_team(self, service: str):
         ...
+
+    def search_services(self, q: SearchServiceQuery = None) -> list[Service]:
+        ...
+
+
+def _select_services(q: SearchServiceQuery):
+    return ServiceM.select(*ServiceM.get_short_fields(), ServiceCategoryM, CountryM) if q.short \
+        else ServiceM.select(ServiceM, ServiceCategoryM, CountryM)
 
 
 @bean
 class ServiceRepoImpl(ServiceRepo):
+    db: DB
 
-    def find_services(self, q: SearchServiceQuery = None) -> list[Service]:
-        r = self._find_services(q, short=True)
+    def search_services(self, q: SearchServiceQuery = None) -> list[Service]:
+        r = self._search_services(q)
         if not r:
             return r
 
@@ -35,8 +44,12 @@ class ServiceRepoImpl(ServiceRepo):
             service.team[x.user_id] = ServiceTeammate(account=x.userm, service_role=x.user_role)
 
         for service in r:
-            service.team = list(service.team.values())
-            service.team.sort(key=lambda t: t.account.id)
+
+            if service.team:
+                service.team = list(service.team.values())
+                service.team.sort(key=lambda t: t.account.id)
+            else:
+                service.team = []
 
         return r
 
@@ -47,24 +60,38 @@ class ServiceRepoImpl(ServiceRepo):
                 .where(UserServiceRolesM.service_id << service_ids))
 
     @to_real_entity
-    def _find_services(self, q: SearchServiceQuery = None, short=True):
-        r = (ServiceM.select(*ServiceM.get_short_fields() if short else ServiceM, ServiceCategoryM, CountryM)
-             .join(ServiceCategoryM, on=(ServiceCategoryM.id == ServiceM.category))
+    def _search_services(self, q: SearchServiceQuery = None):
+        r = _select_services(q)
+        r = (r.join(ServiceCategoryM, on=(ServiceCategoryM.id == ServiceM.category))
              .join(CountryM, on=(CountryM.id == ServiceM.country)))
 
         if not q:
             return r
-
-        if q.country_id:
-            r = r.where(CountryM.id == q.country_id)
-        if q.category_id:
-            r = r.where(ServiceCategoryM.id == q.category_id)
-        if q.query:
-            query_upper = q.query.upper()
-            r = r.where(fn.Upper(ServiceM.name).contains(query_upper) |
-                        fn.Upper(ServiceM.title).contains(query_upper) |
-                        fn.Upper(ServiceM.description).contains(query_upper) |
-                        fn.Upper(ServiceCategoryM.name).contains(query_upper) |
-                        fn.Upper(CountryM.name).contains(query_upper))
+        if q.limit:
+            r = r.limit(q.limit)
+        if q.id:
+            r = r.where(ServiceM.id == q.id)
+        else:
+            if q.country_id:
+                r = r.where(CountryM.id == q.country_id)
+            if q.category_id:
+                r = r.where(ServiceCategoryM.id == q.category_id)
+            if q.query:
+                query_upper = q.query.upper()
+                r = r.where(fn.Upper(ServiceM.name).contains(query_upper) |
+                            fn.Upper(ServiceM.title).contains(query_upper) |
+                            fn.Upper(ServiceM.description).contains(query_upper) |
+                            fn.Upper(CountryM.name).contains(query_upper) |
+                            fn.Upper(ServiceM.tags).contains(query_upper) |
+                            fn.Upper(ServiceCategoryM.name).contains(query_upper))
 
         return r
+
+    def get_team(self, service: str):
+
+        q = """select u.id, u.username, u.email, u.name, u.telegram_username, usr.user_role from public.user u
+        inner join public.user_service_roles usr on usr.user_id=u.id
+        inner join public.service s on s.id=usr.service_id
+        where s.name = %s"""
+
+        return self.db.exec_sql(query=q, params=[service])

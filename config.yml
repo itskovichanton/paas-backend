@@ -3,7 +3,7 @@ app:
   name: paas-kg
 
 email:
-  from: finstart.mailer@molbulak.com
+  from_address: finstart.mailer@molbulak.com
   username: finstart.mailer
   password: Shaxz0da201306
   host: mail.molbulak.com
@@ -45,4 +45,7 @@ dev:
     port: 3
     user: postgres
     password: 92559255
+
+  cherkzion:
+    url: http://localhost:8081
 

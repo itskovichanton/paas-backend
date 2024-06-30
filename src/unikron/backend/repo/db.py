@@ -15,6 +15,9 @@ class DB(Protocol):
     def get_psycopg2_connection(self):
         ...
 
+    def exec_sql(self, query, params) -> list[dict]:
+        ...
+
 
 @dataclass
 class _Config:
@@ -34,3 +37,13 @@ class DBImpl(DB):
     @singleton
     def get_psycopg2_connection(self):
         return psycopg2.connect(dbname='unikron', **self.cfg.__dict__)
+
+    def exec_sql(self, query, params) -> list[dict]:
+        result = []
+        qr = self.get().execute_sql(sql=query, params=params)
+        for r in qr:
+            row = {}
+            for i in range(len(qr.description)):
+                row[qr.description[i].name] = r[i]
+            result.append(row)
+        return result

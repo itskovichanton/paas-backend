@@ -1,0 +1,50 @@
+curl --location 'http://localhost:8082/commons' \
+--header 'Authorization: Basic YWl0c2tvdmljaDpjZWI5ZTBkZWZhYzY1MGMyZDJmYjQxY2Y3ZGNkODg4NA=='
+
+{
+    "result": {
+        "service_categories": [
+            {
+                "id": 1,
+                "name": "отчеты"
+            },
+            {
+                "id": 2,
+                "name": "эквайринг"
+            },
+            {
+                "id": 4,
+                "name": "мобильные приложения"
+            },
+            {
+                "id": 3,
+                "name": "БКИ"
+            },
+            {
+                "id": 5,
+                "name": "внешние контрагенты"
+            },
+            {
+                "id": 6,
+                "name": "другое"
+            }
+        ],
+        "countries": [
+            {
+                "id": 1,
+                "name": "РФ",
+                "strid": "ru"
+            },
+            {
+                "id": 2,
+                "name": "КГ",
+                "strid": "kg"
+            },
+            {
+                "id": 3,
+                "name": "АЗ",
+                "strid": "az"
+            }
+        ]
+    }
+}
