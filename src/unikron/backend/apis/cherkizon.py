@@ -19,7 +19,7 @@ class _Config:
 
 class Cherkizon(Protocol):
 
-    def search_deploys(self, filter: DeployQuery) -> DeployListing:
+    def search_deploys(self, filter: Deploy) -> DeployListing:
         ...
 
 
@@ -32,7 +32,7 @@ class CherkizonImpl(Cherkizon):
             self._session.auth = (self.config.s2s.username, self.config.s2s.password)
         self._session.timeout = 5
 
-    def search_deploys(self, filter: DeployQuery) -> DeployListing:
+    def search_deploys(self, filter: Deploy) -> DeployListing:
         return parse_response(self._session.post(url=self._get_endpoint_url("deploy/list"), json=to_dict_deep(filter)),
                               cl=DeployListing)
 

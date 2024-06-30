@@ -3,6 +3,7 @@ from typing import Protocol
 
 import requests
 from dacite import from_dict, Config
+from src.mybootstrap_core_itskovichanton.realtime_config import RealTimeConfigEntry
 from src.mybootstrap_core_itskovichanton.utils import is_listable
 from src.mybootstrap_ioc_itskovichanton.ioc import bean
 from src.mybootstrap_mvc_fastapi_itskovichanton.utils import parse_response
@@ -16,9 +17,15 @@ class _Config:
     s2s: AuthArgs = None
 
 
+@dataclass
+class ETCDListing:
+    key_prefix: str = None
+    data: list[RealTimeConfigEntry] = None
+
+
 class Replicas(Protocol):
 
-    def list_etcds(self, replica_url):
+    def list_etcds(self, replica_url) -> ETCDListing:
         ...
 
 
@@ -31,5 +38,5 @@ class ReplicasImpl(Replicas):
             self._session.auth = (self.config.s2s.username, self.config.s2s.password)
         self._session.timeout = 5
 
-    def list_etcds(self, replica_url):
-        return parse_response(self._session.get(url=f"{replica_url}/etcd/list"))
+    def list_etcds(self, replica_url) -> ETCDListing:
+        return parse_response(self._session.get(url=f"{replica_url}/etcd/list"), cl=ETCDListing)

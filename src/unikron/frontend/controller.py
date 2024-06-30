@@ -9,6 +9,7 @@ from src.unikron.backend.usecase.get_service_team import GetServiceTeamUseCase
 from src.unikron.backend.usecase.list_deploy_etcds import ListDeploysETCDsUseCase
 from src.unikron.backend.usecase.search_deploys import SearchDeploysUseCase
 from src.unikron.backend.usecase.search_services import SearchServicesUseCase
+from src.unikron.backend.usecase.submit_etcd_changes import SubmitETCDChangesUseCase
 
 
 @bean
@@ -19,6 +20,7 @@ class Controller:
     get_service_team_uc: GetServiceTeamUseCase
     search_deploys_uc: SearchDeploysUseCase
     list_deploys_ETCDs_uc: ListDeploysETCDsUseCase
+    submit_deploy_ETCDs_uc: SubmitETCDChangesUseCase
 
     async def get_commons(self, caller: Caller):
         return await self.action_runner.run(self.get_commons_uc.get,
@@ -32,10 +34,15 @@ class Controller:
         return await self.action_runner.run(self.get_service_team_uc.get,
                                             call={"session": caller.session, "service": service}, unbox_call=True)
 
-    async def search_deploys(self, caller: Caller, filter: DeployQuery):
+    async def search_deploys(self, caller: Caller, filter: Deploy):
         return await self.action_runner.run(self.search_deploys_uc.search,
                                             call={"session": caller.session, "filter": filter}, unbox_call=True)
 
-    async def get_deploy_etcd_list(self, caller: Caller, filter: DeployQuery):
+    async def get_deploy_etcd_list(self, caller: Caller, filter: Deploy):
         return await self.action_runner.run(self.list_deploys_ETCDs_uc.search,
                                             call={"session": caller.session, "filter": filter}, unbox_call=True)
+
+    async def submit_deploy_etcd(self, caller: Caller, filter: Deploy, data: dict):
+        return await self.action_runner.run(self.submit_deploy_ETCDs_uc.submit,
+                                            call={"session": caller.session, "filter": filter, "data": data},
+                                            unbox_call=True)

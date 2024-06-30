@@ -1,5 +1,6 @@
 from src.mybootstrap_core_itskovichanton.app import Application
 from src.mybootstrap_core_itskovichanton.logger import LoggerService
+from src.mybootstrap_core_itskovichanton.realtime_config import RealTimeConfigManager
 from src.mybootstrap_ioc_itskovichanton.ioc import bean
 from src.mybootstrap_pyauth_itskovichanton.backend.auth import Authentificator
 from src.mybootstrap_pyauth_itskovichanton.entities import Session, User, AuthArgs
@@ -21,6 +22,7 @@ class UnikronApp(Application):
     auther: Authentificator
     db_user_permission_repo: UserPermissionRepo
     find_services_uc: SearchServicesUseCase
+    real_time_config: RealTimeConfigManager
     # uc1: GetDeployUrlUseCase
     # file_content_provider: BatchFileWriter
     # batch_file_validator: BatchFileValidator
@@ -32,6 +34,7 @@ class UnikronApp(Application):
     logger_service: LoggerService
 
     def run(self):
+        # self.real_time_config.get_events().set_event_bus()
         self.auther.user_repo = self.user_repo
         # self.find_services_uc.search(session=Session(account=Account(id=1)), q=SearchServiceQuery(query=""))
         # self.db_user_permission_repo.has_permission(1, "control_service", "wri444te_etcd")

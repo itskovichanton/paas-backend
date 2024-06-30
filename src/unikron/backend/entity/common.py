@@ -9,6 +9,7 @@ USER_PERMISSION_WRITE_ETCD = "write_etcd"
 USER_PERMISSION_READ_SERVICE = "read_service"
 USER_PERMISSION_READ_DEPLOYS = "read_deploys"
 USER_PERMISSION_READ_ETCDS = "read_etcds"
+USER_PERMISSION_WRITE_ETCDS = "write_etcds"
 
 
 @dataclass
@@ -125,6 +126,7 @@ class Machine:
     env: str = None
     description: str = None
     info: MachineInfo = None
+    etcd_port: int = None
 
 
 @dataclass

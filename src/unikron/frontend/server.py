@@ -1,4 +1,5 @@
 import os.path
+from dataclasses import dataclass
 
 import uvicorn
 from fastapi import FastAPI
@@ -74,11 +75,22 @@ class Server:
             return FileResponse(os.path.join(self.config_service.dir("static"), filename))
 
         @self.fast_api.post("/deploy/search")
-        async def search_deploys(request: Request, filter: DeployQuery):
+        async def search_deploys(request: Request, filter: Deploy):
             return self.presenter.present(
                 await self.controller.search_deploys(caller=get_caller_from_request(request), filter=filter))
 
         @self.fast_api.post("/deploy/etcd/list")
-        async def get_deploy_etcd_list(request: Request, filter: DeployQuery):
+        async def get_deploy_etcd_list(request: Request, filter: Deploy):
             return self.presenter.present(
                 await self.controller.get_deploy_etcd_list(caller=get_caller_from_request(request), filter=filter))
+
+        @dataclass
+        class _SubmitDeployEtcd:
+            deploy: Deploy
+            data: dict
+
+        @self.fast_api.post("/deploy/etcd/submit")
+        async def submit_deploy_etcd(request: Request, data: _SubmitDeployEtcd):
+            return self.presenter.present(
+                await self.controller.submit_deploy_etcd(caller=get_caller_from_request(request), data=data.data,
+                                                         filter=data.deploy))
